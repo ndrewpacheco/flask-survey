@@ -16,8 +16,6 @@ app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
 responses = []
 
-# def __init__(self, title, instructions, questions):
-
 
 @app.route("/")
 def show_index():
@@ -44,8 +42,6 @@ def show_question(id):
     else:
         question = satisfaction_survey.questions[responses_length]
         return render_template('questions.html', question=question)
-    # else:
-    #     return render_template('thanks.html')
 
 
 @app.route("/answer", methods=["POST"])
