@@ -1,4 +1,4 @@
-from flask import Flask, redirect, render_template, request, flash
+from flask import Flask, redirect, render_template, request, flash, session
 from flask_debugtoolbar import DebugToolbarExtension
 from surveys import satisfaction_survey
 app = Flask(__name__)
@@ -7,21 +7,27 @@ app = Flask(__name__)
 app.debug = True
 
 # set a 'SECRET_KEY' to enable the Flask session cookies
-app.config['SECRET_KEY'] = '<replace with a secret key>'
+app.config['SECRET_KEY'] = 'secretkey'
 
 toolbar = DebugToolbarExtension(app)
 
 # deactivates redirect intercepts
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
-responses = []
-
 
 @app.route("/")
 def show_index():
     """shows first page of app"""
+    session['responses'] = []
     title = satisfaction_survey.title
     return render_template('index.html', title=title)
+
+
+@app.route("/questions/<int:id>", methods=["POST"])
+def post_session(id):
+
+    question = satisfaction_survey.questions[id]
+    return render_template('questions.html', question=question)
 
 
 @app.route("/questions/<int:id>")
@@ -29,7 +35,7 @@ def show_question(id):
     """shows question"""
 
     questions_length = len(satisfaction_survey.questions)
-    responses_length = len(responses)
+    responses_length = len(session['responses'])
 
     # if responses is full
     if responses_length == questions_length:
@@ -46,9 +52,8 @@ def show_question(id):
 
 @app.route("/answer", methods=["POST"])
 def post_answer():
+    responses = session['responses']
+    responses.append(request.form["answer"])
+    session['responses'] = responses
 
-    responses.append(request.args)
-    print(responses)
-    id = len(responses)
-
-    return redirect(f"/questions/{id}")
+    return redirect(f"/questions/{len(responses)}")
